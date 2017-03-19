@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <redbase.h>
 #include "printer.h"
 
 using namespace std;
@@ -82,6 +83,8 @@ Printer::Printer(const DataAttrInfo *attributes_, const int attrCount_)
 
         if (attributes[i].attrType==STRING)
             spaces[i] = min(attributes[i].attrLength, MAXPRINTSTRING);
+        else if(attributes[i].attrType==STRING)
+            spaces[i] = max(32, strlen(psHeader[i]));
         else
             spaces[i] = max(12, strlen(psHeader[i]));
 
@@ -163,6 +166,7 @@ void Printer::Print(ostream &c, const void * const data[])
     char str[MAXPRINTSTRING], strSpace[50];
     int i, a;
     float b;
+    MBR m;
 
     // Increment the number of tuples printed
     iCount++;
@@ -206,6 +210,15 @@ void Printer::Print(ostream &c, const void * const data[])
             else
                 Spaces(strlen(psHeader[i]), strlen(strSpace));
         }
+        if (attributes[i].attrType == _MBR) {
+            memcpy (&m, data[i], sizeof(MBR));
+            sprintf(strSpace, "[%f,%f,%f,%f]",m.left,m.right,m.bottom,m.top);
+            c << strSpace;
+            if (strlen(psHeader[i]) < 32)
+                Spaces(32, strlen(strSpace));
+            else
+                Spaces(strlen(psHeader[i]), strlen(strSpace));
+        }
     }
     c << "\n";
 }
@@ -224,7 +237,7 @@ void Printer::Print(ostream &c, const char * const data)
     char str[MAXPRINTSTRING], strSpace[50];
     int i, a;
     float b;
-
+    MBR m;
     if (data == NULL)
         return;
 
@@ -267,6 +280,15 @@ void Printer::Print(ostream &c, const char * const data)
             c << strSpace;
             if (strlen(psHeader[i]) < 12)
                 Spaces(12, strlen(strSpace));
+            else
+                Spaces(strlen(psHeader[i]), strlen(strSpace));
+        }
+        if (attributes[i].attrType == _MBR) {
+            memcpy (&m, (data+attributes[i].offset), sizeof(MBR));
+            sprintf(strSpace, "[%f,%f,%f,%f]",m.left,m.right,m.bottom,m.top);
+            c << strSpace;
+            if (strlen(psHeader[i]) < 32)
+                Spaces(32, strlen(strSpace));
             else
                 Spaces(strlen(psHeader[i]), strlen(strSpace));
         }
