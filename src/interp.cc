@@ -11,6 +11,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <parser_internal.h>
+#include <redbase.h>
 #include "redbase.h"
 #include "parser_internal.h"
 #include "y.tab.h"
@@ -32,6 +34,7 @@ extern QL_Manager *pQlm;
 #define E_DUPLICATEATTR     -8
 #define E_TOOLONG           -9
 #define E_STRINGTOOLONG     -10
+#define E_INVMBRSIZE        -11
 
 /*
  * file pointer to which error messages are printed
@@ -481,6 +484,10 @@ static int parse_format_string(char *format_string, AttrType *type, int *len)
             *type = FLOAT;
             *len = sizeof(float);
             break;
+         case 'm':
+            *type = _MBR;
+              *len = sizeof(MBR);
+              break;
          case 's':
          case 'c':
             return E_NOLENGTH;
@@ -504,6 +511,8 @@ static int parse_format_string(char *format_string, AttrType *type, int *len)
             if(*len != sizeof(float))
                return E_INVREALSIZE;
             break;
+         case 'm':
+            return E_INVMBRSIZE;
          case 's':
          case 'c':
             *type = STRING;
@@ -565,6 +574,9 @@ static void print_error(char *errmsg, RC errval)
       case E_STRINGTOOLONG:
          fprintf(stderr, "string attribute too long\n");
          break;
+      case E_INVMBRSIZE:
+         fprintf(stderr, "MBR size is fixed to 4 float number, do not specify it");
+           break;
       default:
          fprintf(ERRFP, "unrecognized errval: %d\n", errval);
    }
@@ -717,6 +729,9 @@ static void print_value(NODE *n)
          break;
       case STRING:
          printf(" \"%s\"", n -> u.VALUE.sval);
+           break;
+      case _MBR:
+         printf("[%f,%f,%f,%f]", n->u.VALUE.mval.left, n->u.VALUE.mval.right, n->u.VALUE.mval.bottom, n->u.VALUE.mval.top);
          break;
    }
 }

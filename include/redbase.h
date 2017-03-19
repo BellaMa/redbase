@@ -61,8 +61,15 @@ enum AttrType {
     INT,
     FLOAT,
     STRING,
-    MBR                                         // minimum boundary rec for spatial data, contains 4 float values: X_left, X_right, Y_bottom, Y_top
+    _MBR                                         // minimum boundary rec for spatial data, contains 4 float values: X_left, X_right, Y_bottom, Y_top
 };
+
+typedef struct {
+    float right;
+    float left;
+    float top;
+    float bottom;
+}MBR;
 
 //
 // Comparison operators

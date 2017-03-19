@@ -73,6 +73,7 @@ QL_Manager *pQlm;          // QL component manager
     CompOp cval;
     float rval;
     char *sval;
+    MBR mval;
     NODE *n;
 }
 
@@ -156,6 +157,7 @@ QL_Manager *pQlm;          // QL component manager
       buffer
       statistics
       queryplans
+      mbr
 %%
 
 start
@@ -507,6 +509,77 @@ value
    | T_REAL
    {
       $$ = value_node(FLOAT, (void *)& $1);
+   }
+   | mbr
+   {
+      $$ = $1;
+   }
+   ;
+
+mbr
+   : '[' T_REAL ',' T_REAL ',' T_REAL ',' T_REAL ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_INT ',' T_REAL ',' T_REAL ',' T_REAL ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_REAL ',' T_INT ',' T_REAL ',' T_REAL ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_REAL ',' T_REAL ',' T_INT ',' T_REAL ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_REAL ',' T_REAL ',' T_REAL ',' T_INT ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_INT ',' T_INT ',' T_REAL ',' T_REAL ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_REAL ',' T_INT ',' T_INT ',' T_REAL ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_REAL ',' T_REAL ',' T_INT ',' T_INT ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_INT ',' T_REAL ',' T_INT ',' T_REAL ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_INT ',' T_REAL ',' T_REAL ',' T_INT ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_REAL ',' T_INT ',' T_REAL ',' T_INT ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_REAL ',' T_INT ',' T_INT ',' T_INT ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_INT ',' T_REAL ',' T_INT ',' T_INT ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_INT ',' T_INT ',' T_REAL ',' T_INT ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_INT ',' T_INT ',' T_INT ',' T_REAL ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '[' T_INT ',' T_INT ',' T_INT ',' T_INT ']'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
    ;
 

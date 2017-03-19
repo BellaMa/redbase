@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <parser_internal.h>
+#include <redbase.h>
 #include "redbase.h"
 #include "parser_internal.h"
 #include "y.tab.h"
@@ -288,6 +290,35 @@ NODE *value_node(AttrType type, void *value)
     }
     return n;
 }
+
+NODE *mbr_node(void *right, void *left, void *bottom, void *top){
+    NODE *n = newnode(N_VALUE);
+    if(typeid(right)== typeid(int *)){
+        n->u.VALUE.mval.right = (float) (*(int *) right);
+    }
+    else{
+        n->u.VALUE.mval.right = *(float *) right;
+    }
+    if(typeid(left)== typeid(int *)){
+        n->u.VALUE.mval.left = (float) (*(int *) left);
+    }
+    else{
+        n->u.VALUE.mval.left = *(float *) left;
+    }
+    if(typeid(bottom)== typeid(int *)){
+        n->u.VALUE.mval.bottom = (float) (*(int *) bottom);
+    }
+    else{
+        n->u.VALUE.mval.bottom = *(float *) bottom;
+    }
+    if(typeid(top)== typeid(int *)){
+        n->u.VALUE.mval.top = (float) (*(int *) top);
+    }
+    else{
+        n->u.VALUE.mval.top = *(float *) top;
+    }
+}
+
 
 /*
  * relattr_or_valuenode: allocates, initializes, and returns a pointer to 
