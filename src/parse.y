@@ -517,67 +517,67 @@ value
    ;
 
 mbr
-   : '[' T_REAL ',' T_REAL ',' T_REAL ',' T_REAL ']'
+   : '&' T_REAL ',' T_REAL ',' T_REAL ',' T_REAL '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_INT ',' T_REAL ',' T_REAL ',' T_REAL ']'
+   | '&' T_INT ',' T_REAL ',' T_REAL ',' T_REAL '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_REAL ',' T_INT ',' T_REAL ',' T_REAL ']'
+   | '&' T_REAL ',' T_INT ',' T_REAL ',' T_REAL '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_REAL ',' T_REAL ',' T_INT ',' T_REAL ']'
+   | '&' T_REAL ',' T_REAL ',' T_INT ',' T_REAL '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_REAL ',' T_REAL ',' T_REAL ',' T_INT ']'
+   | '&' T_REAL ',' T_REAL ',' T_REAL ',' T_INT '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_INT ',' T_INT ',' T_REAL ',' T_REAL ']'
+   | '&' T_INT ',' T_INT ',' T_REAL ',' T_REAL '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_REAL ',' T_INT ',' T_INT ',' T_REAL ']'
+   | '&' T_REAL ',' T_INT ',' T_INT ',' T_REAL '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_REAL ',' T_REAL ',' T_INT ',' T_INT ']'
+   | '&' T_REAL ',' T_REAL ',' T_INT ',' T_INT '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_INT ',' T_REAL ',' T_INT ',' T_REAL ']'
+   | '&' T_INT ',' T_REAL ',' T_INT ',' T_REAL '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_INT ',' T_REAL ',' T_REAL ',' T_INT ']'
+   | '&' T_INT ',' T_REAL ',' T_REAL ',' T_INT '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_REAL ',' T_INT ',' T_REAL ',' T_INT ']'
+   | '&' T_REAL ',' T_INT ',' T_REAL ',' T_INT '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_REAL ',' T_INT ',' T_INT ',' T_INT ']'
+   | '&' T_REAL ',' T_INT ',' T_INT ',' T_INT '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_INT ',' T_REAL ',' T_INT ',' T_INT ']'
+   | '&' T_INT ',' T_REAL ',' T_INT ',' T_INT '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_INT ',' T_INT ',' T_REAL ',' T_INT ']'
+   | '&' T_INT ',' T_INT ',' T_REAL ',' T_INT '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_INT ',' T_INT ',' T_INT ',' T_REAL ']'
+   | '&' T_INT ',' T_INT ',' T_INT ',' T_REAL '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
-   | '[' T_INT ',' T_INT ',' T_INT ',' T_INT ']'
+   | '&' T_INT ',' T_INT ',' T_INT ',' T_INT '&'
    {
       $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
    }
@@ -696,7 +696,8 @@ ostream &operator<<(ostream &s, const AttrInfo &ai)
       s << " attrName=" << ai.attrName
       << " attrType=" << 
       (ai.attrType == INT ? "INT" :
-       ai.attrType == FLOAT ? "FLOAT" : "STRING")
+       ai.attrType == FLOAT ? "FLOAT" :
+       ai.attrType == _MBR ? "MBR" :"STRING")
       << " attrLength=" << ai.attrLength;
 }
 
@@ -730,6 +731,9 @@ ostream &operator<<(ostream &s, const Value &v)
          break;
       case STRING:
          s << " (char *)data=" << (char *)v.data;
+         break;
+      case _MBR:
+         s << " *(MBR *)data=" ;
          break;
    }
    return s;
@@ -774,6 +778,9 @@ ostream &operator<<(ostream &s, const AttrType &at)
          break;
       case STRING:
          s << "STRING";
+         break;
+      case _MBR:
+         s << "MBR";
          break;
    }
    return s;

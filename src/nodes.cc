@@ -293,6 +293,7 @@ NODE *value_node(AttrType type, void *value)
 
 NODE *mbr_node(void *right, void *left, void *bottom, void *top){
     NODE *n = newnode(N_VALUE);
+    n->u.VALUE.type = _MBR;
     if(typeid(right)== typeid(int *)){
         n->u.VALUE.mval.right = (float) (*(int *) right);
     }
@@ -317,6 +318,7 @@ NODE *mbr_node(void *right, void *left, void *bottom, void *top){
     else{
         n->u.VALUE.mval.top = *(float *) top;
     }
+    return n;
 }
 
 

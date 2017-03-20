@@ -921,7 +921,6 @@ RC QL_Manager::InsertIntoRelation(const char *relName, int tupleLength, int nVal
     return (rc);
   }
   char *recbuf = (char *)malloc(tupleLength);
-
   // Create record
   CreateRecord(recbuf, attrEntries, nValues, values);
 
