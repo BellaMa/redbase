@@ -65,10 +65,10 @@ enum AttrType {
 };
 
 typedef struct {
-    float right;
     float left;
-    float top;
+    float right;
     float bottom;
+    float top;
 }MBR;
 
 //

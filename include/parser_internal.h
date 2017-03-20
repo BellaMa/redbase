@@ -217,7 +217,7 @@ NODE *update_node(char *relname, NODE *relattr, NODE *value,
 NODE *relattr_node(char *relname, char *attrname);
 NODE *condition_node(NODE *lhsRelattr, CompOp op, NODE *rhsRelattrOrValue);
 NODE *value_node(AttrType type, void *value);
-NODE *mbr_node(void *right, void *left, void *bottom, void *top);
+NODE *mbr_node(NODE *left, NODE *right, NODE *bottom, NODE *top);
 NODE *relattr_or_value_node(NODE *relattr, NODE *value);
 NODE *attrtype_node(char *attrname, char *type);
 NODE *relation_node(char *relname);

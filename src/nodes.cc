@@ -291,32 +291,40 @@ NODE *value_node(AttrType type, void *value)
     return n;
 }
 
-NODE *mbr_node(void *right, void *left, void *bottom, void *top){
+NODE *mbr_node(NODE *left, NODE *right, NODE *bottom, NODE *top){
     NODE *n = newnode(N_VALUE);
     n->u.VALUE.type = _MBR;
-    if(typeid(right)== typeid(int *)){
-        n->u.VALUE.mval.right = (float) (*(int *) right);
-    }
-    else{
-        n->u.VALUE.mval.right = *(float *) right;
-    }
-    if(typeid(left)== typeid(int *)){
-        n->u.VALUE.mval.left = (float) (*(int *) left);
-    }
-    else{
-        n->u.VALUE.mval.left = *(float *) left;
-    }
-    if(typeid(bottom)== typeid(int *)){
-        n->u.VALUE.mval.bottom = (float) (*(int *) bottom);
-    }
-    else{
-        n->u.VALUE.mval.bottom = *(float *) bottom;
-    }
-    if(typeid(top)== typeid(int *)){
-        n->u.VALUE.mval.top = (float) (*(int *) top);
-    }
-    else{
-        n->u.VALUE.mval.top = *(float *) top;
+    switch (left->u.VALUE.type){
+        case INT:
+            n->u.VALUE.mval.left = (float) left->u.VALUE.ival;
+            break;
+        case FLOAT:
+            n->u.VALUE.mval.left = left->u.VALUE.rval;
+            break;
+    };
+    switch (right->u.VALUE.type){
+        case INT:
+            n->u.VALUE.mval.right = (float) right->u.VALUE.ival;
+            break;
+        case FLOAT:
+            n->u.VALUE.mval.right = right->u.VALUE.rval;
+            break;
+    };
+    switch (bottom->u.VALUE.type){
+        case INT:
+            n->u.VALUE.mval.bottom = (float) bottom->u.VALUE.ival;
+            break;
+        case FLOAT:
+            n->u.VALUE.mval.bottom = bottom->u.VALUE.rval;
+            break;
+    };
+    switch (top->u.VALUE.type){
+        case INT:
+            n->u.VALUE.mval.top = (float) top->u.VALUE.ival;
+            break;
+        case FLOAT:
+            n->u.VALUE.mval.top = top->u.VALUE.rval;
+            break;
     }
     return n;
 }

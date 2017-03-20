@@ -15,7 +15,6 @@
 #include <string>
 #include "ql_node.h"
 #include "node_comps.h"
-#include "comparators.h"
 
 using namespace std;
 
@@ -67,6 +66,9 @@ RC QL_Node::PrintCondition(const Condition condition){
     }
     else if(condition.rhsValue.type == FLOAT){
       print_float(condition.rhsValue.data, 4);
+    }
+    else if(condition.rhsValue.type == _MBR){
+      print_mbr(condition.rhsValue.data, sizeof(MBR));
     }
     else{
       print_string(condition.rhsValue.data, strlen((const char *)condition.rhsValue.data));
@@ -152,8 +154,8 @@ RC QL_Node::CheckConditions(char *recData){
     int offset1 = condList[i].offset1;
     // If we are comparing this to a value
     if(! condList[i].isValue){
-      // If it's not a string, or string of equal length, just compare
-      if(condList[i].type != STRING || condList[i].length == condList[i].length2){
+      // If it's not a string or MBR, or string of equal length, just compare
+      if(condList[i].type != STRING || condList[i].type!=_MBR ||condList[i].length == condList[i].length2){
         int offset2 = condList[i].offset2;
         bool comp = condList[i].comparator((void *)(recData + offset1), (void *)(recData + offset2), 
           condList[i].type, condList[i].length);

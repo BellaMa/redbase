@@ -779,6 +779,8 @@ RC QL_Manager::ParseConditions(int nConditions, const Condition conditions[]){
     if(!IsValidAttr(conditions[i].lhsAttr)){
       return (QL_ATTRNOTFOUND);
     }
+    // Check for MBR attr type
+    // Only LT_OP, GT_OP, NE_OP, EQ_OP is valid for MBR attr
     // If we are comparing attribute to a value
     if(!conditions[i].bRhsIsAttr){
       // check that types are the same

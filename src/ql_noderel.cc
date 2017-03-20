@@ -216,6 +216,9 @@ RC QL_NodeRel::PrintNode(int numTabs){
     else if(qlm.attrEntries[indexAttr].attrType == FLOAT){
       print_float(value, 4);
     }
+    else if(qlm.attrEntries[indexAttr].attrType == _MBR){
+      print_mbr(value, sizeof(MBR));
+    }
     else{
       print_string(value, strlen((char *)value));
     }
