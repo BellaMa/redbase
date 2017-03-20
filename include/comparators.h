@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <cstdio>
 #include <cstring>
+#include <iostream>
+using namespace std;
 
 static int compare_string(void *value1, void* value2, int attrLength){
   return strncmp((char *) value1, (char *) value2, attrLength);
@@ -35,8 +37,8 @@ static int compare_mbr(MBR &rec1, MBR &rec2, int attrLength){
    *
    * If equal, then 1, rec1 is inside rec2
    * */
-  if( rec1.left>=rec2.left && rec1.right<=rec2.right && rec1.bottom>=rec2.bottom && rec1.top<=rec2.top)
-    return 1;
+    if( rec1.left>=rec2.left && rec1.right<=rec2.right && rec1.bottom>=rec2.bottom && rec1.top<=rec2.top){
+    return 1;}
   else if( rec1.top<=rec2.bottom || rec1.bottom>=rec2.top || rec1.left>=rec2.right || rec1.right<=rec2.left)
     return 2;
   else if(rec1.left<=rec2.left && rec1.right>=rec2.right && rec1.bottom<=rec2.bottom && rec1.top>=rec2.top)
