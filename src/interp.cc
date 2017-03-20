@@ -449,7 +449,7 @@ static void mk_value(NODE *node, Value &value)
       case STRING:
          value.data = (void *)node->u.VALUE.sval;
          break;
-       case _MBR:
+      case _MBR:
          value.data = (void *)&node->u.VALUE.mval;
            break;
    }

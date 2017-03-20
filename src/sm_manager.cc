@@ -60,6 +60,13 @@ bool recInsert_string(char *location, string value, int length){
   return true;
 }
 
+bool recInsert_mbr(char *location, string value, int length){
+    if(length!= sizeof(MBR))
+        return false;
+    memcpy(location, value.c_str(), length);
+    return true;
+}
+
 /*
  * Constructor and destructor for SM_Manager
  */
@@ -610,6 +617,8 @@ RC SM_Manager::PrepareAttr(RelCatEntry *rEntry, Attr* attributes){
     }
     else if(aEntry->attrType == FLOAT)
       attributes[slot].recInsert = &recInsert_float;
+    else if(aEntry->attrType ==_MBR)
+        attributes[slot].recInsert = &recInsert_mbr;
     else
       attributes[slot].recInsert = &recInsert_string;
   }

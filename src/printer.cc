@@ -84,7 +84,7 @@ Printer::Printer(const DataAttrInfo *attributes_, const int attrCount_)
         if (attributes[i].attrType==STRING)
             spaces[i] = min(attributes[i].attrLength, MAXPRINTSTRING);
         else if(attributes[i].attrType==_MBR)
-            spaces[i] = max(36, strlen(psHeader[i]));
+            spaces[i] = max(32, strlen(psHeader[i]));
         else
             spaces[i] = max(12, strlen(psHeader[i]));
 
@@ -214,7 +214,7 @@ void Printer::Print(ostream &c, const void * const data[])
             memcpy (&m, data[i], sizeof(MBR));
             sprintf(strSpace, "[%f,%f,%f,%f]",m.left,m.right,m.bottom,m.top);
             c << strSpace;
-            if (strlen(psHeader[i]) < 36)
+            if (strlen(psHeader[i]) < 32)
                 Spaces(32, strlen(strSpace));
             else
                 Spaces(strlen(psHeader[i]), strlen(strSpace));

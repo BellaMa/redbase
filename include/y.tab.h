@@ -126,7 +126,6 @@
 #define T_NonOverlap 299
 
 
-
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE
 {
