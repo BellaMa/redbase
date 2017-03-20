@@ -60,6 +60,13 @@ bool recInsert_string(char *location, string value, int length){
   return true;
 }
 
+bool recInsert_mbr(char *location, string value, int length){
+    if(length!= sizeof(MBR))
+        return false;
+    memcpy(location, value.c_str(), length);
+    return true;
+}
+
 /*
  * Constructor and destructor for SM_Manager
  */
@@ -138,7 +145,8 @@ bool SM_Manager::isValidAttrType(AttrInfo attribute){
     return true;
   if(type == STRING && (length > 0) && length < MAXSTRINGLEN)
     return true;
-
+  if(type == _MBR && (length== sizeof(MBR)))
+    return true;
   return false;
 }
 
@@ -159,7 +167,8 @@ RC SM_Manager::CreateTable(const char *relName,
     cout << "   attributes[" << i << "].attrName=" << attributes[i].attrName
         << "   attrType="
         << (attributes[i].attrType == INT ? "INT" :
-            attributes[i].attrType == FLOAT ? "FLOAT" : "STRING")
+            attributes[i].attrType == FLOAT ? "FLOAT" :
+            attributes[i].attrType == _MBR ? "MBR": "STRING")
         << "   attrLength=" << attributes[i].attrLength << "\n";
 
   RC rc = 0;
@@ -608,6 +617,8 @@ RC SM_Manager::PrepareAttr(RelCatEntry *rEntry, Attr* attributes){
     }
     else if(aEntry->attrType == FLOAT)
       attributes[slot].recInsert = &recInsert_float;
+    else if(aEntry->attrType ==_MBR)
+        attributes[slot].recInsert = &recInsert_mbr;
     else
       attributes[slot].recInsert = &recInsert_string;
   }

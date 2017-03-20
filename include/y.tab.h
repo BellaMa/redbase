@@ -74,7 +74,11 @@
      T_REAL = 292,
      T_STRING = 293,
      T_QSTRING = 294,
-     T_SHELL_CMD = 295
+     T_SHELL_CMD = 295,
+     T_Overlap = 296,
+     T_Cover = 297,
+     T_Inside = 298,
+     T_NonOverlap = 299
    };
 #endif
 /* Tokens.  */
@@ -116,8 +120,10 @@
 #define T_STRING 293
 #define T_QSTRING 294
 #define T_SHELL_CMD 295
-
-
+#define T_Overlap 296
+#define T_Cover 297
+#define T_Inside 298
+#define T_NonOverlap 299
 
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED

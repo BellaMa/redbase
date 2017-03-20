@@ -73,6 +73,7 @@ QL_Manager *pQlm;          // QL component manager
     CompOp cval;
     float rval;
     char *sval;
+    MBR mval;
     NODE *n;
 }
 
@@ -101,6 +102,10 @@ QL_Manager *pQlm;          // QL component manager
       T_GT
       T_GE
       T_NE
+      T_Overlap
+      T_Cover
+      T_Inside
+      T_NonOverlap
       T_EOF
       NOTOKEN
       RW_RESET
@@ -156,6 +161,7 @@ QL_Manager *pQlm;          // QL component manager
       buffer
       statistics
       queryplans
+      mbr
 %%
 
 start
@@ -508,6 +514,77 @@ value
    {
       $$ = value_node(FLOAT, (void *)& $1);
    }
+   | mbr
+   {
+      $$ = $1;
+   }
+   ;
+
+mbr
+   : '&' T_REAL ',' T_REAL ',' T_REAL ',' T_REAL '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_INT ',' T_REAL ',' T_REAL ',' T_REAL '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_REAL ',' T_INT ',' T_REAL ',' T_REAL '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_REAL ',' T_REAL ',' T_INT ',' T_REAL '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_REAL ',' T_REAL ',' T_REAL ',' T_INT '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_INT ',' T_INT ',' T_REAL ',' T_REAL '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_REAL ',' T_INT ',' T_INT ',' T_REAL '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_REAL ',' T_REAL ',' T_INT ',' T_INT '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_INT ',' T_REAL ',' T_INT ',' T_REAL '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_INT ',' T_REAL ',' T_REAL ',' T_INT '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_REAL ',' T_INT ',' T_REAL ',' T_INT '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_REAL ',' T_INT ',' T_INT ',' T_INT '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_INT ',' T_REAL ',' T_INT ',' T_INT '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_INT ',' T_INT ',' T_REAL ',' T_INT '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_INT ',' T_INT ',' T_INT ',' T_REAL '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
+   | '&' T_INT ',' T_INT ',' T_INT ',' T_INT '&'
+   {
+      $$ = mbr_node((void *)& $2, (void *)& $4, (void *)& $6, (void *)& $8);
+   }
    ;
 
 opt_relname
@@ -545,6 +622,22 @@ op
    | T_NE
    {
       $$ = NE_OP;
+   }
+   | T_Overlap
+   {
+      $$ = Overlap_SOP;
+   }
+   | T_Cover
+   {
+      $$ = Cover_SOP;
+   }
+   | T_Inside
+   {
+      $$ = Inside_SOP;
+   }
+   | T_NonOverlap
+   {
+      $$ = NonOverlap_SOP;
    }
    ;
 
@@ -623,7 +716,8 @@ ostream &operator<<(ostream &s, const AttrInfo &ai)
       s << " attrName=" << ai.attrName
       << " attrType=" << 
       (ai.attrType == INT ? "INT" :
-       ai.attrType == FLOAT ? "FLOAT" : "STRING")
+       ai.attrType == FLOAT ? "FLOAT" :
+       ai.attrType == _MBR ? "MBR" :"STRING")
       << " attrLength=" << ai.attrLength;
 }
 
@@ -658,6 +752,9 @@ ostream &operator<<(ostream &s, const Value &v)
       case STRING:
          s << " (char *)data=" << (char *)v.data;
          break;
+      case _MBR:
+         s << " *(MBR *)data=[" <<(*(MBR *)v.data).left<<','<<(*(MBR *)v.data).right<<','<<(*(MBR *)v.data).bottom<<','<<(*(MBR *)v.data).top<<']';
+         break;
    }
    return s;
 }
@@ -683,6 +780,18 @@ ostream &operator<<(ostream &s, const CompOp &op)
       case GE_OP:
          s << " >=";
          break;
+      case Cover_SOP:
+         s << " &>";
+         break;
+      case Inside_SOP:
+         s << " &<";
+         break;
+      case Overlap_SOP:
+         s << " &=";
+         break;
+      case NonOverlap_SOP:
+         s << " &<>";
+         break;
       case NO_OP:
          s << " NO_OP";
          break;
@@ -701,6 +810,9 @@ ostream &operator<<(ostream &s, const AttrType &at)
          break;
       case STRING:
          s << "STRING";
+         break;
+      case _MBR:
+         s << "MBR";
          break;
    }
    return s;
