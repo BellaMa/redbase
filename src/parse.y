@@ -780,20 +780,20 @@ ostream &operator<<(ostream &s, const CompOp &op)
       case GE_OP:
          s << " >=";
          break;
-      case NO_OP:
-         s << " NO_OP";
-         break;
       case Cover_SOP:
-         s << " Cover ";
+         s << " &>";
          break;
       case Inside_SOP:
-         s << " In ";
+         s << " &<";
          break;
       case Overlap_SOP:
-         s << " Overlap ";
+         s << " &=";
          break;
       case NonOverlap_SOP:
-         s << " NotOverlap ";
+         s << " &<>";
+         break;
+      case NO_OP:
+         s << " NO_OP";
          break;
    }
    return s;
