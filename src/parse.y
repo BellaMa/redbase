@@ -102,10 +102,6 @@ QL_Manager *pQlm;          // QL component manager
       T_GT
       T_GE
       T_NE
-      T_Overlap
-      T_Cover
-      T_Inside
-      T_NonOverlap
       T_EOF
       NOTOKEN
       RW_RESET
@@ -623,22 +619,6 @@ op
    {
       $$ = NE_OP;
    }
-   | T_Overlap
-   {
-      $$ = Overlap_SOP;
-   }
-   | T_Cover
-   {
-      $$ = Cover_SOP;
-   }
-   | T_Inside
-   {
-      $$ = Inside_SOP;
-   }
-   | T_NonOverlap
-   {
-      $$ = NonOverlap_SOP;
-   }
    ;
 
 nothing
@@ -779,18 +759,6 @@ ostream &operator<<(ostream &s, const CompOp &op)
          break;
       case GE_OP:
          s << " >=";
-         break;
-      case Cover_SOP:
-         s << " &>";
-         break;
-      case Inside_SOP:
-         s << " &<";
-         break;
-      case Overlap_SOP:
-         s << " &=";
-         break;
-      case NonOverlap_SOP:
-         s << " &<>";
          break;
       case NO_OP:
          s << " NO_OP";

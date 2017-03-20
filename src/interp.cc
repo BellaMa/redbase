@@ -707,18 +707,6 @@ static void print_op(CompOp op)
       case GE_OP:
          printf(" >=");
          break;
-      case Overlap_SOP:
-         printf(" &=");
-           break;
-      case Cover_SOP:
-         printf(" &>");
-           break;
-      case Inside_SOP:
-         printf(" &<");
-           break;
-      case NonOverlap_SOP:
-         printf(" &<>");
-           break;
       case NO_OP:
          printf(" NO_OP");
          break;

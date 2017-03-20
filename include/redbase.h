@@ -76,8 +76,7 @@ typedef struct {
 //
 enum CompOp {
     NO_OP,                                      // no comparison
-    EQ_OP, NE_OP, LT_OP, GT_OP, LE_OP, GE_OP,    // binary atomic operators
-    Overlap_SOP, Cover_SOP, Inside_SOP, NonOverlap_SOP   //spatial data operators
+    EQ_OP, NE_OP, LT_OP, GT_OP, LE_OP, GE_OP    // binary atomic operators
 };
 
 //

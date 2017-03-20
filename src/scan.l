@@ -46,10 +46,6 @@ s_num                [+\-]?{num}
 "="                  {return T_EQ;}
 "!="                 {return T_NE;}
 "<>"                 {return T_NE;}
-"&="                 {return T_Overlap;}
-"&<"                 {return T_Inside;}
-"&>"                 {return T_Cover;}
-"&<>"                 {return T_NonOverlap;}
 !                    {BEGIN(shell_cmd);}
 <shell_cmd>[^\n]*    {yylval.sval = yytext; return T_SHELL_CMD;}
 <shell_cmd>\n        {BEGIN(INITIAL);}
