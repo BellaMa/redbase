@@ -61,7 +61,7 @@ set(IX_SOURCES
 		src/ix_indexhandle.cc
 		src/ix_indexscan.cc
 		src/ix_error.cc
-	)
+        include/ix_internal.h)
 set (PARSER_SOURCES
 		src/nodes.cc
 		src/interp.cc

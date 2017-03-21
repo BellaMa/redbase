@@ -29,7 +29,14 @@ static int compare_float(void *value1, void* value2, int attrLength){
     return 0;
 }
 
-static int compare_mbr(MBR &rec1, MBR &rec2, int attrLength){
+// In
+static float mbr_change(void *value, void* value2){
+  MBR rec1 = *(MBR *) value1;
+  MBR rec2 = *(MBR *) value2;
+
+}
+
+static int compare_mbr(void *value1, void* value2, int attrLength){
   /* 0 rec1 overlaps with rec2 but not inside rec2
    * 1 rec1 is inside rec2
    * 2 rec1 is outside rec2 = no intersection
@@ -37,6 +44,8 @@ static int compare_mbr(MBR &rec1, MBR &rec2, int attrLength){
    *
    * If equal, then 1, rec1 is inside rec2
    * */
+  MBR rec1 = *(MBR *) value1;
+  MBR rec2 = *(MBR *) value2;
     if( rec1.left>=rec2.left && rec1.right<=rec2.right && rec1.bottom>=rec2.bottom && rec1.top<=rec2.top){
     return 1;}
   else if( rec1.top<=rec2.bottom || rec1.bottom>=rec2.top || rec1.left>=rec2.right || rec1.right<=rec2.left)

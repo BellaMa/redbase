@@ -9,6 +9,7 @@
 #include "pf.h"
 #include "rm_internal.h"
 #include <stdlib.h>
+#include "comparators.h"
 
 
 RM_FileScan::RM_FileScan(){
@@ -40,6 +41,7 @@ bool equal(void * value1, void * value2, AttrType attrtype, int attrLength){
   switch(attrtype){
     case FLOAT: return (*(float *)value1 == *(float*)value2);
     case INT: return (*(int *)value1 == *(int *)value2) ;
+    case _MBR: return (compare_mbr(value1, value2, attrLength)==2) ;
     default:
       return (strncmp((char *) value1, (char *) value2, attrLength) == 0); 
   }
@@ -49,7 +51,8 @@ bool less_than(void * value1, void * value2, AttrType attrtype, int attrLength){
   switch(attrtype){
     case FLOAT: return (*(float *)value1 < *(float*)value2);
     case INT: return (*(int *)value1 < *(int *)value2) ;
-    default: 
+    case _MBR: return (compare_mbr(value1, value2, attrLength)==1) ;
+    default:
       return (strncmp((char *) value1, (char *) value2, attrLength) < 0);
   }
 }
@@ -58,25 +61,33 @@ bool greater_than(void * value1, void * value2, AttrType attrtype, int attrLengt
   switch(attrtype){
     case FLOAT: return (*(float *)value1 > *(float*)value2);
     case INT: return (*(int *)value1 > *(int *)value2) ;
-    default: 
+    case _MBR: return (compare_mbr(value1, value2, attrLength)==3) ;
+    default:
       return (strncmp((char *) value1, (char *) value2, attrLength) > 0);
   }
 }
 
 bool less_than_or_eq_to(void * value1, void * value2, AttrType attrtype, int attrLength){
+  int compMBR;;
   switch(attrtype){
     case FLOAT: return (*(float *)value1 <= *(float*)value2);
     case INT: return (*(int *)value1 <= *(int *)value2) ;
-    default: 
+    case _MBR:
+      compMBR = compare_mbr(value1, value2, attrLength);
+          return (compMBR==1||compMBR==0);    default:
       return (strncmp((char *) value1, (char *) value2, attrLength) <= 0);
   }
 }
 
 bool greater_than_or_eq_to(void * value1, void * value2, AttrType attrtype, int attrLength){
+  int compMBR;
   switch(attrtype){
     case FLOAT: return (*(float *)value1 >= *(float*)value2);
     case INT: return (*(int *)value1 >= *(int *)value2) ;
-    default: 
+    case _MBR:
+      compMBR = compare_mbr(value1, value2, attrLength);
+          return (compMBR==0||compMBR==3);
+    default:
       return (strncmp((char *) value1, (char *) value2, attrLength) >= 0);
   }
 }
@@ -85,7 +96,8 @@ bool not_equal(void * value1, void * value2, AttrType attrtype, int attrLength){
   switch(attrtype){
     case FLOAT: return (*(float *)value1 != *(float*)value2);
     case INT: return (*(int *)value1 != *(int *)value2) ;
-    default: 
+    case _MBR: return (compare_mbr(value1, value2, attrLength)!=2) ;
+    default:
       return (strncmp((char *) value1, (char *) value2, attrLength) != 0);
   }
 }
