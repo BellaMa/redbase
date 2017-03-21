@@ -81,20 +81,10 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
     rootheader->isLeafNode = true;
     rootheader->isEmpty = true;
     rootheader->num_keys = 0;
-    rootheader->firstSlotIndex = NO_MORE_SLOTS;
-    rootheader->freeSlotIndex = 0;
     entries = (struct Node_Entry *) ((char *)rootheader + header->entryOffset_N);
     for(int i=0; i < header->maxKeys_N; i++){
         entries[i].isValid = UNOCCUPIED;
         entries[i].page = NO_MORE_PAGES;
-    }
-    for(int i=0; i < header->maxKeys_N; i++){
-        entries[i].isValid = UNOCCUPIED;
-        entries[i].page = NO_MORE_PAGES;
-        if(i == (header->maxKeys_N -1))
-            entries[i].nextSlot = NO_MORE_SLOTS;
-        else
-            entries[i].nextSlot = i+1;
     }
     //printf("NODE CREATION: entries[0].nextSlot: %d \n", entries[0].nextSlot);
 

@@ -68,9 +68,9 @@ private:
                            void* pData, int& index);
 
     // Delete from an internal node, a leaf, and a bucket
-    RC DeleteFromNode(struct IX_NodeHeader *nHeader, void *pData, const RID &rid, bool &toDelete,bool &RecIn);
+    RC DeleteFromNode(struct IX_NodeHeader *nHeader, void *pData, const RID &rid, bool &toDelete,bool &RecIn, void *parentKey);
 
-    RC DeleteFromLeaf(struct IX_NodeHeader_L *nHeader, void *pData, const RID &rid, bool &toDelete, bool &RecIn);
+    RC DeleteFromLeaf(struct IX_NodeHeader_L *nHeader, void *pData, const RID &rid, bool &toDelete, bool &RecIn, void *parentKey);
 
     // checks if the values given in the header (offsets, sizes, etc) make
     // a valid header
@@ -80,10 +80,6 @@ private:
     // for the bucket and the nodes
     static int CalcNumKeysNode(int attrLength);
 
-    // Returns the first leaf page in leafPH, and its page number in
-    // leafPage
-    RC GetFirstLeafPage(PF_PageHandle &leafPH, PageNum &leafPage);
-    RC FindRecordPage(PF_PageHandle &leafPH, PageNum &leafPage, void * key);
 
     // Private variables
     bool isOpenHandle;     // Indicator for whether the indexHandle is being used
@@ -128,8 +124,6 @@ private:
     RC GetFirstEntryInLeaf(PF_PageHandle &leafPH);
     // Sets up the scan private variables to the appropriate entry within the given leaf
     RC GetAppropriateEntryInLeaf(PF_PageHandle &leafPH);
-    // Sets up the scan private variables to the first entry within this bucket
-    RC GetFirstBucketEntry(PageNum nextBucket, PF_PageHandle &bucketPH);
     // Sets up the scan private variables to the next entry in the index
     RC FindNextValue();
 
@@ -158,7 +152,6 @@ private:
     char *nextKey;              // two records after that
     char *nextNextKey;
     struct IX_NodeHeader_L *leafHeader;     // the scan's current leaf and bucket header
-    struct IX_BucketHeader *bucketHeader;   // and entry and key pointers
     struct Node_Entry *leafEntries;
     struct Bucket_Entry *bucketEntries;
     char * leafKeys;
@@ -179,7 +172,6 @@ private:
 
     bool foundFirstValue;
     bool foundLastValue;
-    bool useFirstLeaf;
 };
 
 //

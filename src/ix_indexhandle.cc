@@ -9,11 +9,11 @@
 #include "ix.h"
 #include "ix_internal.h"
 #include "pf.h"
-#include "comparators.h"
+#include "node_comps.h"
 #include <cstdio>
 #include <math.h>
 #include <limits>
-
+#include <redbase.h>
 
 
 IX_IndexHandle::IX_IndexHandle(){
@@ -118,7 +118,7 @@ RC IX_IndexHandle::DeleteEntry(void *pData, const RID &rid){
     // because it has no more contents
     bool toDelete = false;
     bool RecIn = false;
-    if((rc = DeleteFromNode(rHeader, pData, rid, toDelete, RecIn))) // Delete the value from this node
+    if((rc = DeleteFromNode(rHeader, pData, rid, toDelete, RecIn, NULL))) // Delete the value from this node
         return (rc);
 
     // If the tree is empty, set the current node to a leaf node.
@@ -140,6 +140,16 @@ RC IX_IndexHandle::ForcePages(){
     return (rc);
 }
 
+
+RC IX_IndexHandle::PrintIndex(){
+    RC rc;
+    PageNum leafPage;
+    PF_PageHandle ph;
+    struct IX_NodeHeader_L *lheader;
+    struct Node_Entry *entries;
+    char *keys;
+    return (0);
+}
 
 /*
  * This function creates a new page and sets it up as a node. It returns the open
@@ -188,14 +198,14 @@ int IX_IndexHandle::CalcNumKeysNode(int attrLength){
  * This function deletes an entry from a leaf given the header of the leaf. It returns
  * in toDelete whether this leaf node is empty, and whether to delete it
  */
-RC IX_IndexHandle::DeleteFromLeaf(struct IX_NodeHeader_L *nHeader, void *pData, const RID &rid, bool &toDelete, bool &RecIn){
+RC IX_IndexHandle::DeleteFromLeaf(struct IX_NodeHeader_L *nHeader, void *pData, const RID &rid, bool &toDelete, bool &RecIn, void* parentKey){
     RC rc = 0;
     struct Node_Entry *entries = (struct Node_Entry *) ((char *)nHeader + header.entryOffset_N);
     char *keys = (char *)nHeader + header.keysOffset_N;
     for(int i=0;i<header.maxKeys_N;++i){
         if(entries[i].isValid==UNOCCUPIED)
             continue;
-        if(!compare_string(keys+i*header.attr_length, pData, header.attr_length)
+        if(!compare_string(keys+i*header.attr_length, pData, header.attr_length))
             continue;
         PageNum ridPage;
         SlotNum ridSlot;
@@ -209,6 +219,19 @@ RC IX_IndexHandle::DeleteFromLeaf(struct IX_NodeHeader_L *nHeader, void *pData, 
     }
     if(nHeader->num_keys == 0){ // If the leaf is now empty,
         toDelete = true;          // return the indicator to delete
+    }
+    else{
+        MBR newMBR;
+        newMBR.left = numeric_limits<float>::max();
+        newMBR.right = numeric_limits<float>::min();
+        newMBR.bottom = numeric_limits<float>::max();
+        newMBR.top = numeric_limits<float>::min();
+        memcpy(parentKey, &newMBR, sizeof(MBR));
+        for(int i=0;i<header.maxKeys_N;i++){
+            if(entries[i].isValid==UNOCCUPIED)
+                continue;
+            mbr_update((char *) parentKey, parentKey, keys+i*header.attr_length);
+        }
     }
     return (0);
 }
@@ -350,109 +373,132 @@ RC IX_IndexHandle::FindNodeInsertIndex(struct IX_NodeHeader *nHeader,
     return (0);
 }
 
-/*
- * Returns the Open PF_PageHandle and the page number of the first leaf page in
- * this index
- */
-RC IX_IndexHandle::GetFirstLeafPage(PF_PageHandle &leafPH, PageNum &leafPage){
-    RC rc = 0;
-    struct IX_NodeHeader *rHeader;
-    if((rc = rootPH.GetData((char *&)rHeader))){ // retrieve header info
-        return (rc);
-    }
-
-    // if root node is a leaf:
-    if(rHeader->isLeafNode == true){
-        leafPH = rootPH;
-        leafPage = header.rootPage;
-        return (0);
-    }
-
-    // Otherwise, search down by always going down the first page in each
-    // internal node
-    struct IX_NodeHeader_I *nHeader = (struct IX_NodeHeader_I *)rHeader;
-    PageNum nextPageNum = nHeader->firstPage;
-    PF_PageHandle nextPH;
-    if(nextPageNum == NO_MORE_PAGES)
-        return (IX_EOF);
-    if((rc = pfh.GetThisPage(nextPageNum, nextPH)) || (rc = nextPH.GetData((char *&)nHeader)))
-        return (rc);
-    while(nHeader->isLeafNode == false){ // if it's not a leaf node, unpin it and go
-        PageNum prevPage = nextPageNum;    // to its first child
-        nextPageNum = nHeader->firstPage;
-        if((rc = pfh.UnpinPage(prevPage)))
-            return (rc);
-        if((rc = pfh.GetThisPage(nextPageNum, nextPH)) || (rc = nextPH.GetData((char *&)nHeader)))
-            return (rc);
-    }
-    leafPage = nextPageNum;
-    leafPH = nextPH;
-
-    return (rc);
-}
-
-RC IX_IndexHandle::FindRecordPage(PF_PageHandle &leafPH, PageNum &leafPage, void *key){
-    RC rc = 0;
-    struct IX_NodeHeader *rHeader;
-    if((rc = rootPH.GetData((char *&) rHeader))){ // retrieve header info
-        return (rc);
-    }
-    // if root node is leaf
-    if(rHeader->isLeafNode == true){
-        leafPH = rootPH;
-        leafPage = header.rootPage;
-        return (0);
-    }
-
-    struct IX_NodeHeader_I *nHeader = (struct IX_NodeHeader_I *)rHeader;
-    int index = BEGINNING_OF_SLOTS;
-    bool isDup = false;
-    PageNum nextPageNum;
-    PF_PageHandle nextPH;
-    if((rc = FindNodeInsertIndex((struct IX_NodeHeader *)nHeader, key, index)))
-        return (rc);
-    struct Node_Entry *entries = (struct Node_Entry *)((char *)nHeader + header.entryOffset_N);
-    if(index == BEGINNING_OF_SLOTS)
-        nextPageNum = nHeader->firstPage;
-    else
-        nextPageNum = entries[index].page;
-    if(nextPageNum == NO_MORE_PAGES)
-        return (IX_EOF);
-
-    if((rc = pfh.GetThisPage(nextPageNum, nextPH)) || (rc = nextPH.GetData((char *&)nHeader)))
-        return (rc);
-
-    while(nHeader->isLeafNode == false){
-        if((rc = FindNodeInsertIndex((struct IX_NodeHeader *)nHeader, key, index)))
-            return (rc);
-
-        entries = (struct Node_Entry *)((char *)nHeader + header.entryOffset_N);
-        PageNum prevPage = nextPageNum;
-        if(index == BEGINNING_OF_SLOTS)
-            nextPageNum = nHeader->firstPage;
-        else
-            nextPageNum = entries[index].page;
-        //char *keys = (char *)nHeader + header.keysOffset_N;
-        if((rc = pfh.UnpinPage(prevPage)))
-            return (rc);
-        if((rc = pfh.GetThisPage(nextPageNum, nextPH)) || (rc = nextPH.GetData((char *&)nHeader)))
-            return (rc);
-    }
-    leafPage = nextPageNum;
-    leafPH = nextPH;
-
-    return (rc);
-}
-
 
 /*
  * This function deletes a entry RID/key from a node given its node Header. It returns
  * a boolean toDelete that indicates whether the current node is empty or not, to signal
  * to the caller to delete this node
  */
-RC IX_IndexHandle::DeleteFromNode(struct IX_NodeHeader *nHeader, void *pData, const RID &rid, bool &toDelete, bool &RecIn){
+RC IX_IndexHandle::DeleteFromNode(struct IX_NodeHeader *nHeader, void *pData, const RID &rid, bool &toDelete, bool &RecIn, void *parentKey){
     RC rc = 0;
     toDelete = false;
+    struct Node_Entry *entries = (struct Node_Entry *) ((char *)nHeader + header.entryOffset_N);
+    char *keys = (char *)nHeader + header.keysOffset_N;
+    for(int i=0;i<header.maxKeys_N;++i){
+        if(entries[i].isValid==UNOCCUPIED)
+            continue;
+        if(nequal(pData, keys+i*header.attr_length, _MBR, header.attr_length)){
+            PageNum nextNodePage = entries[i].page;
+            PF_PageHandle nextNodePH;
+            struct IX_NodeHeader *nextNodeHeader;
+            if((rc = pfh.GetThisPage(nextNodePage, nextNodePH)) || (rc = nextNodePH.GetData((char *&)nextNodeHeader)))
+                return (rc);
+            if(rc = DeleteFromNode( nextNodeHeader, pData, rid, toDelete, RecIn, keys+i*header.attr_length))
+                return(rc);
+            if(toDelete){
+                entries[i].isValid = UNOCCUPIED;
+                --nHeader->num_keys;
+                if(nHeader->num_keys == 0){ // If the leaf is now empty,
+                    toDelete = true;          // return the indicator to delete
+                }
+            }
+            if(RecIn){
+                if(parentKey!=NULL){
+                    MBR newMBR;
+                    newMBR.left = numeric_limits<float>::max();
+                    newMBR.right = numeric_limits<float>::min();
+                    newMBR.bottom = numeric_limits<float>::max();
+                    newMBR.top = numeric_limits<float>::min();
+                    memcpy(parentKey, &newMBR, sizeof(MBR));
+                    for(int i=0;i<header.maxKeys_N;i++){
+                        if(entries[i].isValid==UNOCCUPIED)
+                            continue;
+                        mbr_update((char *) parentKey, parentKey, keys+i*header.attr_length);
+                    }
+                }
+                return (0);
+            }
+        }
+    }
+    return (rc);
+}
 
+/*
+ * This function deals with splitting a node:
+ * pHeader - the header of the parent node
+ * oldHeader - the header of the full node to be split
+ * oldPage - the PageNum of the old node to be split
+ * index - the index into which to insert the new node into in the parent node
+ * newKeyIndex - the index of the first key that points to the new node
+ * newPageNum - the page number of the new node
+ */
+RC IX_IndexHandle::SplitNode(struct IX_NodeHeader *pHeader, struct IX_NodeHeader *oldHeader,
+                             PageNum oldPage, int index, int & newKeyIndex, PageNum &newPageNum){
+    RC rc = 0;
+    //printf("********* SPLIT ********* at index %d \n", index);
+    bool isLeaf = false;  // Determines if the new page should be a leaf page
+    if(oldHeader->isLeafNode == true){
+        isLeaf = true;
+    }
+    PageNum newPage;  // Creates the new page, and acquires its headers
+    struct IX_NodeHeader *newHeader;
+    PF_PageHandle newPH;
+    if((rc = CreateNewNode(newPH, newPage, (char *&)newHeader, isLeaf))){
+        return (rc);
+    }
+    newPageNum = newPage; // returns new page number
+
+    // Retrieve the appropriate pointers to all the nodes' contents
+    struct Node_Entry *pEntries = (struct Node_Entry *) ((char *)pHeader + header.entryOffset_N);
+    struct Node_Entry *oldEntries = (struct Node_Entry *) ((char *)oldHeader + header.entryOffset_N);
+    struct Node_Entry *newEntries = (struct Node_Entry *) ((char *)newHeader + header.entryOffset_N);
+    char *pKeys = (char *)pHeader + header.keysOffset_N;
+    char *newKeys = (char *)newHeader + header.keysOffset_N;
+    char *oldKeys = (char *)oldHeader + header.keysOffset_N;
+
+    // Keep the first header.masKeys_N/2 values in the old node
+    for(int i=0; i<header.maxKeys_N/2;i++){
+        memcpy(newEntries+i* sizeof(Node_Entry), oldEntries+(i+header.maxKeys_N/2)* sizeof(Node_Entry), sizeof(Node_Entry));
+        oldEntries[i].isValid = UNOCCUPIED;
+        memcpy(newKeys+i*header.attr_length, oldKeys+(i+header.maxKeys_N/2)*header.attr_length, header.attr_length);
+    }
+    //Find a Unocupied index to store the new node, which is newKeyIndex
+    for(int i=0;i<header.maxKeys_N;++i){
+        if(pEntries[i].isValid==UNOCCUPIED){
+            newKeyIndex = i;
+            pEntries[i].isValid=OCCUPIED_NEW;
+            pEntries[i].page = newPageNum;
+            break;
+        }
+    }
+    //update the new mbr for the old node
+    MBR newMBR;
+    newMBR.left = numeric_limits<float>::max();
+    newMBR.right = numeric_limits<float>::min();
+    newMBR.bottom = numeric_limits<float>::max();
+    newMBR.top = numeric_limits<float>::min();
+    memcpy(pKeys+index*header.attr_length, &newMBR, sizeof(MBR));
+    for(int i=0;i<header.maxKeys_N;i++){
+        if(oldEntries[i].isValid==UNOCCUPIED)
+            continue;
+        mbr_update(pKeys+index*header.attr_length, pKeys+index*header.attr_length, oldKeys+i*header.attr_length);
+    }
+    //update the new mbr for the new node
+    newMBR.left = numeric_limits<float>::max();
+    newMBR.right = numeric_limits<float>::min();
+    newMBR.bottom = numeric_limits<float>::max();
+    newMBR.top = numeric_limits<float>::min();
+    memcpy(pKeys+newKeyIndex*header.attr_length, &newMBR, sizeof(MBR));
+    for(int i=0;i<header.maxKeys_N;i++){
+        if(newEntries[i].isValid==UNOCCUPIED)
+            continue;
+        mbr_update(pKeys+newKeyIndex*header.attr_length, pKeys+newKeyIndex*header.attr_length, newKeys+i*header.attr_length);
+    }
+    pHeader->num_keys++;
+
+    // Mark the new page as dirty, and unpin it
+    if((rc = pfh.MarkDirty(newPage))||(rc = pfh.UnpinPage(newPage))){
+        return (rc);
+    }
     return (rc);
 }
