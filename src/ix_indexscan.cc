@@ -204,26 +204,7 @@ RC IX_IndexScan::SetRID(bool setCurrent){
  */
 RC IX_IndexScan::FindNextValue(){
     RC rc = 0;
-    if(hasBucketPinned){ // If a bucket is pinned, then search in this bucket
-        int prevSlot = bucketSlot;
-        bucketSlot = bucketEntries[prevSlot].nextSlot; // update the slot index
-        if(bucketSlot != NO_MORE_SLOTS){
-            return (0); // found next bucket slot, so stop searching
-        }
-        // otherwise, unpin this bucket
-        PageNum nextBucket = bucketHeader->nextBucket;
-        if((rc = (indexHandle->pfh).UnpinPage(currBucketNum) ))
-            return (rc);
-        hasBucketPinned = false;
 
-        if(nextBucket != NO_MORE_PAGES){ // If this is a valid bucket, open it up, and get
-            // the first entry
-            if((rc = GetFirstBucketEntry(nextBucket, currBucketPH) ))
-                return (rc);
-            currBucketNum = nextBucket;
-            return (0);
-        }
-    }
     // otherwise, deal with leaf level.
     int prevLeafSlot = leafSlot;
     leafSlot = leafEntries[prevLeafSlot].nextSlot; // update to the next leaf slot
@@ -233,9 +214,6 @@ RC IX_IndexScan::FindNextValue(){
     if(leafSlot != NO_MORE_SLOTS && leafEntries[leafSlot].isValid == OCCUPIED_DUP){
         nextNextKey = leafKeys + leafSlot * attrLength;
         currBucketNum = leafEntries[leafSlot].page;
-
-        if((rc = GetFirstBucketEntry(currBucketNum, currBucketPH) ))
-            return (rc);
         return (0);
     }
     // Otherwise, stay update the key.
@@ -284,7 +262,7 @@ RC IX_IndexScan::GetAppropriateEntryInLeaf(PF_PageHandle &leafPH){
     leafKeys = (char *)leafHeader + (indexHandle->header).keysOffset_N;
     int index = 0;
     bool isDup = false;
-    if((rc = indexHandle->FindNodeInsertIndex((struct IX_NodeHeader *)leafHeader, value, index, isDup)))
+    if((rc = indexHandle->FindNodeInsertIndex((struct IX_NodeHeader *)leafHeader, value, index)))
         return (rc);
 
     leafSlot = index;
@@ -295,8 +273,6 @@ RC IX_IndexScan::GetAppropriateEntryInLeaf(PF_PageHandle &leafPH){
 
     if(leafEntries[leafSlot].isValid == OCCUPIED_DUP){ // if it's a duplciate value, go into the bucket
         currBucketNum = leafEntries[leafSlot].page;      // to retrieve the first entry
-        if((rc = GetFirstBucketEntry(currBucketNum, currBucketPH)))
-            return (rc);
     }
     return (0);
 }

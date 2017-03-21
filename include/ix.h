@@ -80,6 +80,7 @@ private:
     // for the bucket and the nodes
     static int CalcNumKeysNode(int attrLength);
 
+    RC FindRecordPage(PF_PageHandle &leafPH, PageNum &leafPage, void * key);
 
     // Private variables
     bool isOpenHandle;     // Indicator for whether the indexHandle is being used

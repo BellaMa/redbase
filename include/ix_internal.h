@@ -54,6 +54,7 @@ struct Entry{
 struct Node_Entry{
     char isValid;     // Whether the slot is valid, contains a duplicate
     // value, or a single value
+    int nextSlot;
     PageNum page;     // Maybe delete
     SlotNum slot;     // Maybe keep as the pointer to record.
     // (only valid for leaf nodes)
