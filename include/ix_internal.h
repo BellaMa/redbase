@@ -20,9 +20,7 @@ struct IX_NodeHeader{
     bool isEmpty;     // Whether the node contains pointers or not
     int num_keys;     // number of valid keys the node holds
 
-    int firstSlotIndex; // the pointer to the beginning of the linked list of
     // valid key/pointer slots
-    int freeSlotIndex;  // the pointer to the beginning of free slots
     PageNum invalid1;
     PageNum invalid2;
 };
@@ -32,8 +30,6 @@ struct IX_NodeHeader_I{
     bool isEmpty;     // whether the node has its first page pointer or not
     int num_keys;
 
-    int firstSlotIndex;
-    int freeSlotIndex;
     PageNum firstPage; // first leaf page under this internal node
     PageNum invalid2;
 };
@@ -43,8 +39,6 @@ struct IX_NodeHeader_L{
     bool isEmpty;
     int num_keys;
 
-    int firstSlotIndex;
-    int freeSlotIndex;
     PageNum nextPage; // next leaf page
     PageNum prevPage; // previous leaf page
 };
@@ -60,8 +54,6 @@ struct Entry{
 struct Node_Entry{
     char isValid;     // Whether the slot is valid, contains a duplicate
     // value, or a single value
-    MBR node_mbr;     // minimum boundary rectangular of this node
-    int nextSlot;
     int level;
     PageNum page;     // Maybe delete
     SlotNum slot;     // Maybe keep as the pointer to record.

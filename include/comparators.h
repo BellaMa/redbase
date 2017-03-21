@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <algorithm>
 using namespace std;
 
 static int compare_string(void *value1, void* value2, int attrLength){
@@ -29,11 +30,28 @@ static int compare_float(void *value1, void* value2, int attrLength){
     return 0;
 }
 
-// In
-static float mbr_change(void *value, void* value2){
+// The change of rec2 in order to fit in rec1
+static float mbr_change(void *value1, void* value2){
   MBR rec1 = *(MBR *) value1;
   MBR rec2 = *(MBR *) value2;
+  float left,right,bottom,top, difference;
+  left = min(rec1.left,rec2.left);
+  bottom = min(rec1.bottom,rec2.bottom);
+  right = max(rec1.right,rec2.right);
+  top = max(rec1.top,rec2.top);
+  difference = (right-left)*(top-bottom) - (rec2.right-rec2.left)*(rec2.top-rec2.bottom);
+  return difference;
+}
 
+void mbr_update(char* keypoint, void* value1, void* value2){
+  MBR rec1 = *(MBR *) value1;
+  MBR rec2 = *(MBR *) value2;
+  MBR newrec;
+  newrec.left = min(rec1.left,rec2.left);
+  newrec.bottom = min(rec1.bottom,rec2.bottom);
+  newrec.right = max(rec1.right,rec2.right);
+  newrec.top = max(rec1.top,rec2.top);
+  memcpy(keypoint, (char*) &newrec, sizeof(MBR));
 }
 
 static int compare_mbr(void *value1, void* value2, int attrLength){

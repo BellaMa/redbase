@@ -55,27 +55,22 @@ public:
 private:
     // Creates new node and bucket pages
     RC CreateNewNode(PF_PageHandle &ph, PageNum &page, char *& nData, bool isLeaf);
-    //RC CreateNewBucket(PageNum &page);
 
     // Inserts a value into a non-full node, or a bucket
     RC InsertIntoNonFullNode(struct IX_NodeHeader *nHeader, PageNum thisNodeNum, void *pData, const RID &rid);
-    RC InsertIntoBucket(PageNum page, const RID &rid);
 
     // Splits the node given itself, and the parent node
     RC SplitNode(struct IX_NodeHeader *pHeader, struct IX_NodeHeader *oldHeader, PageNum oldPage, int index,
                  int &newKeyIndex, PageNum &newPageNum);
 
-    // Find the index before the current one passed in
-    RC FindPrevIndex(struct IX_NodeHeader *nHeader, int thisIndex, int &prevIndex);
     // Find the appropriate index to insert the value into
     RC FindNodeInsertIndex(struct IX_NodeHeader *nHeader,
-                           void* pData, int& index, bool& isDup);
+                           void* pData, int& index);
 
     // Delete from an internal node, a leaf, and a bucket
-    RC DeleteFromNode(struct IX_NodeHeader *nHeader, void *pData, const RID &rid, bool &toDelete);
-    RC DeleteFromBucket(struct IX_BucketHeader *bHeader, const RID &rid,
-                        bool &deletePage, RID &lastRID, PageNum &nextPage);
-    RC DeleteFromLeaf(struct IX_NodeHeader_L *nHeader, void *pData, const RID &rid, bool &toDelete);
+    RC DeleteFromNode(struct IX_NodeHeader *nHeader, void *pData, const RID &rid, bool &toDelete,bool &RecIn);
+
+    RC DeleteFromLeaf(struct IX_NodeHeader_L *nHeader, void *pData, const RID &rid, bool &toDelete, bool &RecIn);
 
     // checks if the values given in the header (offsets, sizes, etc) make
     // a valid header
@@ -84,7 +79,6 @@ private:
     // Given an attribute length, calculates the max number of entries
     // for the bucket and the nodes
     static int CalcNumKeysNode(int attrLength);
-    static int CalcNumKeysBucket(int attrLength);
 
     // Returns the first leaf page in leafPH, and its page number in
     // leafPage
